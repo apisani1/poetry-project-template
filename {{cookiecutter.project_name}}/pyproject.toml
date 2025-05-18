@@ -16,7 +16,11 @@ readme = "README.md"
 "Issue Tracker" = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_name }}/issues"
 
 [tool.semantic_release]
-version_variable = ["pyproject.toml:version", "docs/conf.py:release"]
+version_variable = [
+    "pyproject.toml:version",
+    "docs/conf.py:release",
+    "src/__init__.py:__version__",
+]
 
 [tool.poetry.dependencies]
 python = "{{ cookiecutter.python_version }}"
