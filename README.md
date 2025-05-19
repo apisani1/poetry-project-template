@@ -1,5 +1,5 @@
 # Python Project Template
-A professional Python project template based on Poetry for package management. This template provides everything you need to get started with a well-structured Python project, including documentation, testing, linting, and GitHub CI integration.
+A Python project template based on Poetry for package management. This template provides everything you need to get started with a well-structured Python project, including documentation, testing, linting, and GitHub CI integration.
 
 ## Features
 
@@ -32,10 +32,9 @@ This will prompt you for configuration values and create a new project based on 
 
 You can also provide configuration values directly:
 ```bash
-cookiecutter https://github.com/apisani1/python-project-template.git \
+cookiecutter https://github.com/apisani1/poetry-project-template.git \
 --no-input \
-project_name="My Amazing Project" \
-package_name="my_amazing_project" \
+project_name="My-Amazing-Project" \
 author_name="Your Name" \
 email="your.email@example.com" \
 github_username="yourusername" \
@@ -47,7 +46,7 @@ python_version="3.11"
 The generated project will have the following structure:
 
 ```
-your_project/
+your-project/
 ├── .github/                # GitHub Actions workflows
 │   ├── workflows/
 │   │   ├── docs.yml        # Documentation build and checks
@@ -84,6 +83,16 @@ your_project/
 | `description` | `A short description of the project` | Short project description |
 | `python_version` | `3.10` | Python version requirement |
 
+## GitHub Repository Setup
+
+The following repository secrets ared needed for the GitHub workflows: 
+
+```
+TEST_PYPI_TOKEN
+PYPI_TOKEN
+RTD_TOKEN
+```
+
 ## Development Workflow
 
 The generated project includes a Makefile with common development tasks:
@@ -117,11 +126,8 @@ You can customize this template by:
 
 1. Forking the repository   
 2. Modifying files in the template structure   
-3. Updating cookiecutter.json with your preferred defaults   
+3. Updating cookiecutter.json with your preferred defaults 
 
 ## License
 This project template is released under the MIT License. See the LICENSE file for details.
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
