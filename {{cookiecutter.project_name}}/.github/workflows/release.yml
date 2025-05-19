@@ -104,9 +104,6 @@ jobs:
         run: poetry build
 
       - name: Test PyPI release
-        {% raw %}
-        if: steps.release-type.outputs.type != 'release'
-        {% endraw %}
         env:
           {% raw %}
           POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.TEST_PYPI_TOKEN }}
@@ -116,10 +113,6 @@ jobs:
           poetry publish -r testpypi
 
       - name: Test installation from TestPyPI
-        {% raw %}
-        if: steps.release-type.outputs.type != 'release'
-        {% endraw %}
-        continue-on-error: false
         run: |
           # Create test environment
           python -m venv test_env
