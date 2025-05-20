@@ -126,7 +126,7 @@ def create_release(
         rollback(time_stamp)
         raise RuntimeError(f"Git or shell command failed: {e}")
     except Exception as e:
-        logger.error(f"Failed to create release. Rolling back changes.")
+        logger.error(f"Failed to create release: {e}. Rolling back changes.")
         rollback(time_stamp)
         raise
 
@@ -160,7 +160,7 @@ def get_current_version(project_file: str) -> Version:
         version = Version(version_text)
         logger.info(f"Current version found in '{project_file}': '{version}'")
         return version
-    except InvalidVersion as e:
+    except InvalidVersion:
         logger.error(f"Invalid version found in '{project_file}': '{version_text}'")
         raise ValueError(f"Invalid version format in '{project_file}': '{version_text}'")
 
@@ -264,7 +264,7 @@ def bump_version(
         logging.info(f"Bumping from version {current_version} to {new_version}")
         return Version(new_version)
 
-    except Exception as e:
+    except Exception:
         logger.error(
             f"Error bumping: {current_version}"
             f", release type: '{release_type.value}'"
@@ -335,9 +335,9 @@ def update_changelog(changelog_path: str, date: str, new_version: Version, chang
         changelog_file.write_text(new_content)
 
         if files_backup:
-            files_backup = chain(files_backup, zip([changelog_file], [current_content]))
+            files_backup = chain(files_backup, zip([str(changelog_file)], [current_content]))
         else:
-            files_backup = zip([changelog_file], [current_content])
+            files_backup = zip([str(changelog_file)], [current_content])
 
         return changelog_entry
 
@@ -394,7 +394,7 @@ def create_commit(
 ) -> str:
     """Create a commit with the changes."""
     commit_msg = [f"release {new_version}: {change_type[release_type]}({scope[release_type]}) "]
-    commit_msg += f"{pre_release_prefix[prerelease_type] if prerelease_type else ''}"
+    commit_msg.append(f"{pre_release_prefix[prerelease_type] if prerelease_type else ''}")
     commit_msg.append("")
     commit_msg.append("Changes")
     commit_msg.append("-" * 80)
