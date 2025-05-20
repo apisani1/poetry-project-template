@@ -9,13 +9,13 @@ This documentation covers the {{ cookiecutter.project_name }} library.
 ## Installation
 
 ```bash
-pip install {{ cookiecutter.package_name }}
+pip install {{ cookiecutter.project_name }}
 ```
 
 Or, if you use Poetry:
 
 ```bash
-poetry add {{ cookiecutter.package_name }}
+poetry add {{ cookiecutter.project_name }}
 ```
 
 ## Quick Start

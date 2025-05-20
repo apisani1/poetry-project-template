@@ -1,6 +1,6 @@
 # API Reference
 
-This section will contain the API documentation for langchain-prolog.
+This section will contain the API documentation for {{ cookiecutter.project_name }}.
 
 ## How to Document Your API
 

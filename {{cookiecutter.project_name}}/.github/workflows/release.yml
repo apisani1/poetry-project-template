@@ -19,12 +19,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      {% raw %}
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ "{{" }} matrix.python-version {{ "}}" }}
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-      {% endraw %}
+          python-version: ${{ "{{" }} matrix.python-version {{ "}}" }}
 
       - name: Install Poetry
         run: |
@@ -65,22 +63,18 @@ jobs:
       - name: Determine release type
         id: release-type
         run: |
-          {% raw %}
-          if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(\.post[0-9]+)?$ ]]; then
+          if [[ ${{ "{{" }} github.ref {{ "}}" }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(\.post[0-9]+)?$ ]]; then
             echo "type=release" >> $GITHUB_OUTPUT
-          elif [[ ${{ github.ref }} =~ ^refs/tags/v.*-alpha|beta|rc ]]; then
+          elif [[ ${{ "{{" }} github.ref {{ "}}" }} =~ ^refs/tags/v.*-alpha|beta|rc ]]; then
             echo "type=prerelease" >> $GITHUB_OUTPUT
           else
             echo "type=draft" >> $GITHUB_OUTPUT
           fi
-          {% endraw %}
 
       - name: Extract release notes from tag
         id: release-notes
         run: |
-          {% raw %}
-          VERSION=${GITHUB_REF#refs/tags/v}
-          {% endraw %}
+          VERSION=${{ "{" }}GITHUB_REF#refs/tags/v{{ "}" }}
           echo "Release version: $VERSION"
 
           echo "Extracting message from tag v$VERSION..."
@@ -105,9 +99,7 @@ jobs:
 
       - name: Test PyPI release
         env:
-          {% raw %}
-          POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.TEST_PYPI_TOKEN }}
-          {% endraw %}
+          POETRY_PYPI_TOKEN_TESTPYPI: ${{ "{{" }} secrets.TEST_PYPI_TOKEN {{ "}}" }}
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
           poetry publish -r testpypi
@@ -135,34 +127,26 @@ jobs:
         with:
           files: dist/*
           body_path: RELEASE_NOTES.md
-          {% raw %}
-          draft: ${{ steps.release-type.outputs.type == 'draft' }}
-          prerelease: ${{ steps.release-type.outputs.type == 'prerelease' }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          {% endraw %}
+          draft: ${{ "{{" }} steps.release-type.outputs.type == 'draft' {{ "}}" }}
+          prerelease: ${{ "{{" }} steps.release-type.outputs.type == 'prerelease' {{ "}}" }}
+          token: ${{ "{{" }} secrets.GITHUB_TOKEN {{ "}}" }}
 
       - name: Publish to PyPI
-        {% raw %}
         if: steps.release-type.outputs.type == 'release'
-        {% endraw %}
         env:
-          {% raw %}
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
-          {% endraw %}
+          POETRY_PYPI_TOKEN_PYPI: ${{ "{{" }} secrets.PYPI_TOKEN {{ "}}" }}
         run: poetry publish
 
       - name: Update ReadTheDocs
-        {% raw %}
         if: steps.release-type.outputs.type == 'release'
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION=${{ "{" }}GITHUB_REF#refs/tags/v{{ "}" }}
           TAG_NAME="v$VERSION"
 
           echo "Activating version $TAG_NAME via API..."
           curl -s -X PATCH \
-            -H "Authorization: Token ${{ secrets.RTD_TOKEN }}" \
+            -H "Authorization: Token ${{ "{{" }} secrets.RTD_TOKEN {{ "}}" }}" \
             -H "Content-Type: application/json" \
             -d '{"active": true}' \
-            "https://readthedocs.org/api/v3/projects/langchain-prolog/versions/$TAG_NAME/" || true
+            "https://readthedocs.org/api/v3/projects/{{ cookiecutter.project_name }}/versions/$TAG_NAME/" || true
         continue-on-error: true
-        {% endraw %}

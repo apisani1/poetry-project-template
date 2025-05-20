@@ -12,7 +12,6 @@ import sys
 
 project = "{{ cookiecutter.project_name }}"
 copyright = f"{datetime.now().year}, {{ cookiecutter.author_name }}"
-copyright = "2025, {{ cookiecutter.author_name }}"
 author = "{{ cookiecutter.author_name }}"
 release = "{{ cookiecutter.version }}"
 
@@ -58,8 +57,6 @@ autodoc_default_options = {
 # Intersphinx configuration for external documentation
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    # "langchain": ("https://api.python.langchain.com/en/latest/", None),
-    # "pydantic": ("https://docs.pydantic.dev/latest/", None),
 }
 
 intersphinx_disabled_domains = []
@@ -145,7 +142,7 @@ autodoc_member_order = "bysource"  # Keep same order as in the source code
 # Simple mocking for straightforward imports
 autodoc_mock_imports = [
     {% if cookiecutter.autodoc_mock_imports %}{% for module in cookiecutter.autodoc_mock_imports.split(',') %}"{{ module.strip() }}",
-    {% endfor %}{% else %}"janus_swi",{% endif %}
+    {% endfor %}{% else %}{% endif %}
 ]
 
 # For more complex mocking where simple mocking isn't sufficient

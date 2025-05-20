@@ -17,7 +17,7 @@ install-dev:
 	@echo "Installing development dependencies..."
 	@poetry install --with dev,test,lint,typing,docs
 
-# Install spec@ific dependency groups
+# Install specific dependency groups
 install-test:
 	@echo "Installing test dependencies..."
 	@poetry install --with test
@@ -228,7 +228,7 @@ test-verbose:
 	@echo "Running tests in verbose mode..."
 	@poetry run pytest $(TEST_FILE) -v
 
-# Run tests that match a spec@ific pattern
+# Run tests that match a specific pattern
 test-pattern:
 	@echo "Running tests matching pattern $(p)..."
 	@poetry run pytest $(TEST_FILE) -k "$(p)"
@@ -255,7 +255,7 @@ help-test:
 	@echo '  -v, --verbose           Show more detailed output'
 	@echo '  -x, --exitfirst         Stop on first failure'
 	@echo '  --pdb                   Start the Python debugger on errors'
-	@echo '  -m MARK                 Only run tests with spec@ific markers'
+	@echo '  -m MARK                 Only run tests with specific markers'
 	@echo '  -k EXPRESSION           Only run tests that match expression'
 	@echo '  --log-cli-level=INFO    Show log messages in the console'
 	@echo '  --cov=PACKAGE           Measure code coverage for a package'
@@ -268,10 +268,10 @@ help-test:
 	@echo '  make test PYTEST_ARGS="--cov={{ cookiecutter.package_name }} --cov-report=html"'
 	@echo ''
 	@echo 'Specialized test targets:'
-	@echo '  make test-verbose       Run tests with verbose output'
+	@echo '  make test-verbose 		 Run tests with verbose output'
 	@echo '  make test-cov           Run tests with coverage report'
 	@echo '  make test-pattern p=foo Run tests matching "foo" pattern'
-	@echo '  make test-file f=file   Run tests in spec@ific file'
+	@echo '  make test-file f=file   Run tests in specific file'
 
 
 ######################
@@ -282,7 +282,7 @@ help-test:
 # Generate API documentation automatically
 docs-api:
 	@echo "Generating API documentation..."
-	@cd docs && poetry run sphinx-apidoc -o api ../src/langchain_prolog -f
+	@cd docs && poetry run sphinx-apidoc -o api ../src/{{ cookiecutter.package_name }} -f
 
 docs:
 	@echo "Building documentation..."
