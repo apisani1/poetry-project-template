@@ -29,7 +29,8 @@ python = "{{ cookiecutter.python_version }}"
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-# Intentionally empty for project-specific additions
+ipykernel = "^6.29.5"
+python-dotenv = "^1.1.0"
 
 [tool.poetry.group.test]
 optional = true
