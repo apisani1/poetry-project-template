@@ -51,7 +51,6 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          poetry run pip install --upgrade pip
           poetry install --with docs --verbose
 
       - name: Check Documentation Quality
