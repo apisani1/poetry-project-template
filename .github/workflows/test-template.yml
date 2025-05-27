@@ -28,11 +28,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest pytest-cookies cookiecutter toml pyyaml
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          poetry --version
-
       - name: Run tests
         run: |
           pytest -vv tests/test_bake.py tests/test_structure.py tests/test_github.py tests/test_docs.py
