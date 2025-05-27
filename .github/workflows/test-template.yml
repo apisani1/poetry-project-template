@@ -28,6 +28,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest pytest-cookies cookiecutter toml pyyaml
 
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry --version
+
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project true
+
       - name: Run tests
         run: |
           pytest -vv tests/test_bake.py tests/test_structure.py tests/test_github.py tests/test_docs.py
