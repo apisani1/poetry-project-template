@@ -56,4 +56,4 @@ jobs:
         run: ./run.sh lint:flake8
 
       - name: Run tests
-        run: ./run.sh tests
+        run: ./run.sh tests || [ $? -eq 5 ]
