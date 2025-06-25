@@ -1,11 +1,22 @@
 """Pytest configuration for template tests."""
+
 import os
-import shutil
-import tempfile
 from contextlib import contextmanager
 
 import pytest
-from cookiecutter.main import cookiecutter
+
+from tests.project_structure import custom_context
+
+
+# import sys
+# from pathlib import Path
+
+
+# THIS_DIR = Path(__file__).parent
+# TESTS_DIR_PARENT = (THIS_DIR / "..").resolve()
+
+# # ensure that `from tests ...` import statements work within the tests/ dir
+# sys.path.insert(0, str(TESTS_DIR_PARENT))
 
 
 @contextmanager
@@ -23,19 +34,18 @@ def inside_dir(dirpath):
 def bake_in_temp_dir(cookies, **kwargs):
     """Create a temporary directory and bake a cookiecutter template."""
     try:
-        result = cookies.bake(
-            extra_context=kwargs.get('extra_context', {})
-        )
-        
+        result = cookies.bake(extra_context=kwargs.get("extra_context", {}))
+
         if result.exception:
             raise result.exception
-        
+
         yield result
-    
+
     except Exception as e:
         # Log any exceptions for debugging
         print(f"Error baking template: {e}")
         raise
+
 
 @pytest.fixture
 def default_project(cookies):
@@ -47,14 +57,6 @@ def default_project(cookies):
 @pytest.fixture
 def custom_project(cookies):
     """Create a customized project using the template."""
-    context = {
-        'project_name': 'test-project',
-        'author_name': 'Test User',
-        'email': 'test@example.com',
-        'github_username': 'testuser',
-        'version': '0.2.0',
-        'description': 'A test project created for testing purposes',
-        'python_version': '3.11',
-    }
-    with bake_in_temp_dir(cookies, extra_context=context) as result:
+
+    with bake_in_temp_dir(cookies, extra_context=custom_context) as result:
         yield result

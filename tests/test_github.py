@@ -1,67 +1,62 @@
 """Test GitHub integration features."""
+
 import os
 import yaml
 import pytest
 
+from tests.project_structure import github_workflow_files
+
 
 def test_github_workflows(default_project):
     """Test that GitHub workflows are valid YAML."""
-    workflow_files = [
-        '.github/workflows/docs.yml',
-        '.github/workflows/release.yml'
-    ]
-    
-    for workflow_file in workflow_files:
+
+    for workflow_file in github_workflow_files:
         # Use project_path to get the full path to the generated project
         workflow_path = os.path.join(default_project.project_path, workflow_file)
         assert os.path.exists(workflow_path)
-        
+
         try:
             with open(workflow_path) as f:
                 workflow = yaml.safe_load(f)
-                
+
             # Check required sections
-            assert 'name' in workflow
-            assert True in workflow
-            assert 'jobs' in workflow
+            assert "name" in workflow
+            assert "jobs" in workflow
+
         except Exception as e:
             pytest.fail(f"Invalid YAML in {workflow_file}: {e}")
 
 
 def test_github_variables_templating(default_project):
     """Test that GitHub workflows use correct templating."""
-    workflow_files = [
-        '.github/workflows/docs.yml',
-        '.github/workflows/release.yml'
-    ]
-    
-    for workflow_file in workflow_files:
+
+    for workflow_file in github_workflow_files:
         workflow_path = os.path.join(default_project.project_path, workflow_file)
         with open(workflow_path) as f:
             content = f.read()
-        
+
         # Check that no unprocessed cookiecutter variables remain
-        assert '{{ cookiecutter.' not in content, f"Unprocessed cookiecutter variable in {workflow_file}"
-        
+        assert "{{ cookiecutter." not in content, f"Unprocessed cookiecutter variable in {workflow_file}"
+
         # GitHub variables should remain as ${{ ... }}
-        assert '${{' in content, f"GitHub variables missing in {workflow_file}"
-        
+        assert "${{" in content, f"GitHub variables missing in {workflow_file}"
+
         # Check that no Jinja2 tags remain
-        assert '{%' not in content, f"Unprocessed Jinja2 tags in {workflow_file}"
+        assert "{%" not in content, f"Unprocessed Jinja2 tags in {workflow_file}"
 
 
 def test_readthedocs_config(default_project):
     """Test that ReadTheDocs config is valid."""
-    rtd_config_path = os.path.join(default_project.project_path, '.readthedocs.yaml')
+    rtd_config_path = os.path.join(default_project.project_path, ".readthedocs.yaml")
     assert os.path.exists(rtd_config_path)
-    
+
     try:
         with open(rtd_config_path) as f:
             config = yaml.safe_load(f)
-            
+
         # Check required keys
-        assert 'version' in config
-        assert 'build' in config
-        assert 'sphinx' in config
+        assert "version" in config
+        assert "build" in config
+        assert "sphinx" in config
     except Exception as e:
         pytest.fail(f"Invalid YAML in .readthedocs.yaml: {e}")

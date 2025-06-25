@@ -275,6 +275,7 @@ function format:tests {
 # Combined check
 function check {
     # Note: This applies formatting (for local development)
+    install:all
     format
     lint
     tests
