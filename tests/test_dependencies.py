@@ -6,7 +6,7 @@ import pytest
 import os
 
 # Import inside_dir from conftest
-from conftest import inside_dir
+from tests.conftest import inside_dir
 
 
 def test_pyproject_toml_valid(default_project):

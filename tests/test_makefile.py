@@ -5,7 +5,7 @@ import subprocess
 
 import pytest
 
-from conftest import inside_dir
+from tests.conftest import inside_dir
 
 
 def test_makefile_exists(default_project):

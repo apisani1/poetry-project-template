@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 import pytest
 
-from conftest import inside_dir
+from tests.conftest import inside_dir
 
 
 def test_docs_generation(default_project):
