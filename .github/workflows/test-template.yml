@@ -49,4 +49,4 @@ jobs:
           ./run.sh lint
 
       - name: Run tests
-        run: ./run.sh tests -v
+        run: ./run.sh tests -v -n auto

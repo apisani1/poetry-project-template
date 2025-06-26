@@ -23,6 +23,7 @@ optional = true
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.4"
 pytest-cookies = "^0.7.0"
+pytest-xdist = "^3.7.0"
 toml = "^0.10.2"
 
 [tool.pytest.ini_options]
@@ -143,17 +144,11 @@ disable = [
 ]
 
 [tool.pylint.MASTER]
-ignore = [
-    ".venv",
-    ".git",
-    "__pycache__",
-    "build",
-    "dist"
-]
+ignore = [".venv", ".git", "__pycache__", "build", "dist"]
 ignore-paths = [
     "{{cookiecutter.project_name}}/src",
     "{{cookiecutter.project_name}}/tests",
-    "{{cookiecutter.project_name}}/docs"
+    "{{cookiecutter.project_name}}/docs",
 ]
 
 [tool.pylint.FORMAT]
