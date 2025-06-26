@@ -58,6 +58,13 @@ sphinx-tabs = "^3.4.7"
 doc8 = ">=0.8.0"
 
 [tool.black]
+extend-exclude = '''
+/(
+    {{cookiecutter.project_name}}/src
+  | {{cookiecutter.project_name}}/tests
+  | {{cookiecutter.project_name}}/docs
+)/
+'''
 line-length = 119
 
 [tool.flake8]
@@ -77,8 +84,19 @@ extend-ignore = [
     "D104",
     # W605: Invalid escape sequence
     "W605",
+    # E203: Whitespace before ':'
+    "E203",
 ]
-exclude = [".venv", ".git", "__pycache__", "build", "dist"]
+exclude = [
+    ".venv",
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "{{cookiecutter.project_name}}/src",
+    "{{cookiecutter.project_name}}/tests",
+    "{{cookiecutter.project_name}}/docs",
+]
 radon-max-cc = 15
 max-line-length = 119
 
@@ -90,8 +108,13 @@ disallow_incomplete_defs = true
 ignore_missing_imports = true
 show_error_codes = true
 warn_unused_ignores = true
+exclude = [
+    "{{cookiecutter.project_name}}/src",
+    "{{cookiecutter.project_name}}/tests",
+    "{{cookiecutter.project_name}}/docs",
+]
 
-[tool.pylint.messages_control]
+[tool.pylint.MESSAGES_CONTROL]
 disable = [
     "raw-checker-failed",
     "bad-inline-option",
@@ -113,8 +136,27 @@ disable = [
     "raise-missing-from",
     "redefined-builtin",
     "invalid-overridden-method",
+    "unspecified-encoding",
+    "import-outside-toplevel",
+    "global-statement",
+    "global-variable-not-assigned",
 ]
-ignore = [".venv", ".git", "__pycache__", "build", "dist"]
+
+[tool.pylint.MASTER]
+ignore = [
+    ".venv",
+    ".git",
+    "__pycache__",
+    "build",
+    "dist"
+]
+ignore-paths = [
+    "{{cookiecutter.project_name}}/src",
+    "{{cookiecutter.project_name}}/tests",
+    "{{cookiecutter.project_name}}/docs"
+]
+
+[tool.pylint.FORMAT]
 max-line-length = 119
 
 [tool.isort]
@@ -158,4 +200,13 @@ ensure_newline_before_comments = true
 line_length = 119
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 default_section = "FIRSTPARTY"
-extend_skip = [".venv", ".git", "__pycache__", "build", "dist"]
+extend_skip = [
+    ".venv",
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "{{cookiecutter.project_name}}/src",
+    "{{cookiecutter.project_name}}/tests",
+    "{{cookiecutter.project_name}}/docs",
+]
