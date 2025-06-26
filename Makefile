@@ -94,15 +94,19 @@ pre-commit:
 
 # Run tests (maintains backward compatibility with Makefile interface)
 test:
-	@./run.sh tests $(TEST_FILE) $(PYTEST_ARGS)
+	@./run.sh tests -n auto $(TEST_FILE) $(PYTEST_ARGS)
 
 # Alias for consistency with run.sh
 tests:
-	@./run.sh tests $(TEST_FILE) $(PYTEST_ARGS)
+	@./run.sh tests -n auto $(TEST_FILE) $(PYTEST_ARGS)
 
 # Run tests in verbose mode
 test-verbose:
-	@./run.sh tests:verbose
+	@./run.sh tests -v -n auto $(TEST_FILE) $(PYTEST_ARGS)
+
+# Alias for consistency with run.sh
+tests-verbose:
+	@./run.sh tests -v -n auto $(TEST_FILE) $(PYTEST_ARGS)
 
 # Run tests that match a specific pattern
 test-pattern:
