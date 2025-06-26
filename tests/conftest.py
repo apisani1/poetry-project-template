@@ -2,9 +2,14 @@
 
 import os
 from contextlib import contextmanager
+from typing import (
+    Any,
+    Generator,
+)
 
 import pytest
 
+from pytest_cookies.plugin import Result
 from tests.project_structure import custom_context
 
 
@@ -20,7 +25,7 @@ from tests.project_structure import custom_context
 
 
 @contextmanager
-def inside_dir(dirpath):
+def inside_dir(dirpath: str) -> Generator[None, None, None]:
     """Execute code from inside the given directory."""
     old_path = os.getcwd()
     try:
@@ -31,7 +36,7 @@ def inside_dir(dirpath):
 
 
 @contextmanager
-def bake_in_temp_dir(cookies, **kwargs):
+def bake_in_temp_dir(cookies: Result, **kwargs: Any) -> Generator[Result, None, None]:
     """Create a temporary directory and bake a cookiecutter template."""
     try:
         result = cookies.bake(extra_context=kwargs.get("extra_context", {}))
@@ -48,14 +53,14 @@ def bake_in_temp_dir(cookies, **kwargs):
 
 
 @pytest.fixture
-def default_project(cookies):
+def default_project(cookies: Result) -> Generator[Result, None, None]:
     """Create a default project using the template."""
     with bake_in_temp_dir(cookies) as result:
         yield result
 
 
 @pytest.fixture
-def custom_project(cookies):
+def custom_project(cookies: Result) -> Generator[Result, None, None]:
     """Create a customized project using the template."""
 
     with bake_in_temp_dir(cookies, extra_context=custom_context) as result:

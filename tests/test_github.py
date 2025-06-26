@@ -1,13 +1,15 @@
 """Test GitHub integration features."""
 
 import os
-import yaml
+
 import pytest
 
+import yaml  # type: ignore[import-untyped]
+from pytest_cookies.plugin import Result
 from tests.project_structure import github_workflow_files
 
 
-def test_github_workflows(default_project):
+def test_github_workflows(default_project: Result) -> None:
     """Test that GitHub workflows are valid YAML."""
 
     for workflow_file in github_workflow_files:
@@ -27,7 +29,7 @@ def test_github_workflows(default_project):
             pytest.fail(f"Invalid YAML in {workflow_file}: {e}")
 
 
-def test_github_variables_templating(default_project):
+def test_github_variables_templating(default_project: Result) -> None:
     """Test that GitHub workflows use correct templating."""
 
     for workflow_file in github_workflow_files:
@@ -45,7 +47,7 @@ def test_github_variables_templating(default_project):
         assert "{%" not in content, f"Unprocessed Jinja2 tags in {workflow_file}"
 
 
-def test_readthedocs_config(default_project):
+def test_readthedocs_config(default_project: Result) -> None:
     """Test that ReadTheDocs config is valid."""
     rtd_config_path = os.path.join(default_project.project_path, ".readthedocs.yaml")
     assert os.path.exists(rtd_config_path)

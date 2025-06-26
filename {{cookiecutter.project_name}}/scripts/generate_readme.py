@@ -1,5 +1,8 @@
 """Generate README.md from documentation files."""
 
+from typing import Optional
+
+
 DOCS_PATH = "./docs/source/"
 ELEMENTS = [
     ("badges", "", ""),
@@ -9,7 +12,7 @@ ELEMENTS = [
 ]
 
 
-def extract_content(file_path: str, start_marker: str = None, end_marker: str = None) -> str:
+def extract_content(file_path: str, start_marker: Optional[str] = None, end_marker: Optional[str] = None) -> str:
     """Extract content between markers from a file."""
     with open(file_path, "r") as f:
         content = f.read()
@@ -22,7 +25,7 @@ def extract_content(file_path: str, start_marker: str = None, end_marker: str = 
     return content
 
 
-def generate_readme():
+def generate_readme() -> None:
     """Generate README.md from documentation files."""
     # Start with the basic structure
     readme = []

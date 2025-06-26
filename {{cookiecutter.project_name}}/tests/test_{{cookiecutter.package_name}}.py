@@ -7,6 +7,6 @@ def test_import():
 
 def test_version():
     """Test that version is defined."""
-    from {{ cookiecutter.package_name }} import __version__
+    from {{cookiecutter.package_name}} import __version__
     assert __version__ is not None
     assert isinstance(__version__, str)

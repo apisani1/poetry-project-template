@@ -192,7 +192,7 @@ def read_from_toml_file(file_path: str, section: str, key: str) -> Optional[str]
         raise
 
 
-def bump_version(
+def bump_version(  # pylint: disable=too-many-branches
     current_version: Version,
     release_type: ReleaseType,
     prerelease_type: Optional[PrereleaseType] = None,
@@ -244,7 +244,8 @@ def bump_version(
                         new_version = f"{major}.{minor}.{micro}{prerelease_type.value}1"
                     else:
                         raise ValueError(
-                            f"Cannot bump to prerelease '{prerelease_type.value}' from prerelease '{current_pre_type}'. "
+                            f"Cannot bump to prerelease '{prerelease_type.value}' \
+                                from prerelease '{current_pre_type}'. "
                         )
         elif release_type == ReleaseType.DEV:
             current_pre__segment = (
@@ -425,7 +426,7 @@ def create_tag(date: str, new_version: Version, changes: str) -> None:
 
 def save_state(start_dt: datetime, current_version: Version) -> None:
     """Save the state to allow for rollover after release is succesful."""
-    global files_backup
+    global files_backup  # noqa: F824
 
     try:
         with open(BEFORE_LAST_RELEASE, "wb") as f:
@@ -438,7 +439,7 @@ def save_state(start_dt: datetime, current_version: Version) -> None:
 
 def load_state() -> Tuple[datetime, Version, Optional[Iterator[Tuple[str, str]]]]:
     """Load the state to allow for rollback after release is succesful."""
-    global files_backup
+    global files_backup  # noqa: F824
 
     try:
         with open(BEFORE_LAST_RELEASE, "rb") as f:
@@ -455,7 +456,7 @@ def load_state() -> Tuple[datetime, Version, Optional[Iterator[Tuple[str, str]]]
 
 def rollback(start_dt: datetime) -> None:
     """Rollback changes if something goes wrong."""
-    global files_backup
+    global files_backup  # noqa: F824
 
     logger.info("Rolling back changes...")
     try:
@@ -495,7 +496,9 @@ def rollback(start_dt: datetime) -> None:
         logger.error("Manual intervention may be required")
 
 
-if __name__ == "__main__":
+def main() -> None:
+    global files_backup
+
     try:
         import argparse
 
@@ -509,7 +512,7 @@ if __name__ == "__main__":
         release_parser.add_argument("--changes", nargs=1, help="Changes for changelog")
 
         # Rollback command
-        rollback_parser = subparsers.add_parser("rollback", help="Rollback last release")
+        subparsers.add_parser("rollback", help="Rollback last release")
 
         # Logging verbose option for both commands
         parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
@@ -549,3 +552,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

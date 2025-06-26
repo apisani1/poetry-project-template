@@ -89,6 +89,8 @@ extend-ignore = [
     "D104",
     # W605: Invalid escape sequence
     "W605",
+    # E203: Whitespace before ':'
+    "E203",
 ]
 exclude = [
     # "docs",
@@ -113,7 +115,7 @@ ignore_missing_imports = true
 show_error_codes = true
 warn_unused_ignores = true
 
-[tool.pylint.messages_control]
+[tool.pylint.MESSAGES_CONTROL]
 disable = [
     "raw-checker-failed",
     "bad-inline-option",
@@ -135,7 +137,16 @@ disable = [
     "raise-missing-from",
     "redefined-builtin",
     "invalid-overridden-method",
+    "unspecified-encoding",
+    "import-outside-toplevel",
+    "global-statement",
+    "global-variable-not-assigned",
 ]
+
+[tool.pylint.FORMAT]
+max-line-length = 119
+
+[tool.pylint.MASTER]
 ignore = [
     # "tests",
     # "docs",
@@ -145,7 +156,6 @@ ignore = [
     "build",
     "dist",
 ]
-max-line-length = 119
 
 [tool.isort]
 profile = "black"

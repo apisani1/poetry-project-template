@@ -6,9 +6,10 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-from datetime import datetime
 import os
 import sys
+from datetime import datetime
+
 
 project = "{{ cookiecutter.project_name }}"
 copyright = f"{datetime.now().year}, {{ cookiecutter.author_name }}"
@@ -134,6 +135,7 @@ def setup(app):
     app.add_css_file("custom.css")
 
 from unittest.mock import MagicMock
+
 
 # Autodoc core settings
 autoclass_content = "both"  # Include both class and __init__ docstrings

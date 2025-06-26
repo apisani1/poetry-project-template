@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-import toml
 import re
 import sys
 from pathlib import Path
+
+import toml  # type: ignore[import-untyped]
+
 
 def update_files(new_version: str, dry_run: bool = False) -> None:
     pyproject = Path("pyproject.toml")
@@ -37,6 +39,7 @@ def update_files(new_version: str, dry_run: bool = False) -> None:
         else:
             path.write_text(new_content)
             print(f"UPDATED: {file_path}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

@@ -1,15 +1,18 @@
 """Test Poetry dependencies in the template."""
 
-import subprocess
-import toml
-import pytest
 import os
+import subprocess
+
+import pytest
+
+import toml  # type: ignore[import-untyped]
+from pytest_cookies.plugin import Result
 
 # Import inside_dir from conftest
 from tests.conftest import inside_dir
 
 
-def test_pyproject_toml_valid(default_project):
+def test_pyproject_toml_valid(default_project: Result) -> None:
     """Test that pyproject.toml is valid TOML."""
     # Use the project directory path
     pyproject_path = os.path.join(default_project.project_path, "pyproject.toml")
@@ -32,7 +35,7 @@ def test_pyproject_toml_valid(default_project):
         assert group in pyproject["tool"]["poetry"]["group"]
 
 
-def test_poetry_check(default_project):
+def test_poetry_check(default_project: Result) -> None:
     """Test that Poetry can validate the pyproject.toml file."""
     with inside_dir(default_project.project_path):
         try:
@@ -41,7 +44,7 @@ def test_poetry_check(default_project):
             pytest.fail(f"Poetry check failed: {e.stderr}")
 
 
-def test_poetry_lock_generation(default_project):
+def test_poetry_lock_generation(default_project: Result) -> None:
     """Test that Poetry can generate a lock file."""
     with inside_dir(default_project.project_path):
         try:
