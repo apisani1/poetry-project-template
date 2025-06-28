@@ -17,6 +17,7 @@ INSTALL_DEPS=true
 INIT_GIT=true
 CREATE_GITHUB=false
 CREATE_SECRETS=false
+CREATE_PYPIRC=false
 ENV_FILE=".env"
 HELP=false
 
@@ -41,6 +42,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --secrets)
             CREATE_SECRETS=true
+            shift
+            ;;
+        --pypirc)
+            CREATE_PYPIRC=true
             shift
             ;;
         --env=*)
@@ -91,17 +96,25 @@ if [ "$HELP" = true ] || [ -z "$PROJECT_NAME" ]; then
     echo "  --no-git                    Skip Git initialization"
     echo "  --github                    Create GitHub repository (requires gh CLI)"
     echo "  --secrets                   Create GitHub repository secrets from .env"
+    echo "  --pypirc                    Create .pypirc file from .env tokens"
     echo "  --env=FILE                  Use specific .env file (default: .env)"
     echo "  --template=PATH             Use a specific template path"
     echo "  -h, --help                  Show this help message"
     echo ""
-    echo "GitHub Secrets:"
-    echo "  The script can automatically create these repository secrets:"
+    echo "Publishing Setup:"
+    echo "  The script can set up both automated and manual publishing:"
+    echo ""
+    echo "  GitHub Secrets (--secrets):"
     echo "  - TEST_PYPI_TOKEN           Token for TestPyPI publishing"
     echo "  - PYPI_TOKEN                Token for PyPI publishing"
     echo "  - RTD_TOKEN                 Token for ReadTheDocs integration"
     echo ""
-    echo "  These should be defined in your .env file as:"
+    echo "  Local .pypirc (--pypirc):"
+    echo "  - Creates .pypirc file for manual publishing"
+    echo "  - Uses same tokens from .env file"
+    echo "  - Enables 'make publish:test' and 'make publish'"
+    echo ""
+    echo "  Required .env file format:"
     echo "  TEST_PYPI_TOKEN=pypi-..."
     echo "  PYPI_TOKEN=pypi-..."
     echo "  RTD_TOKEN=rtd_..."
@@ -176,6 +189,72 @@ create_github_secrets() {
     fi
 }
 
+# Function to create .pypirc file from environment variables
+create_pypirc_file() {
+    local project_dir="$1"
+
+    echo -e "${YELLOW}Creating .pypirc file in $project_dir from environment variables...${NC}"
+
+    # Check if required tokens are available
+    local test_token="${TEST_PYPI_TOKEN}"
+    local pypi_token="${PYPI_TOKEN}"
+
+    if [ -z "$test_token" ] && [ -z "$pypi_token" ]; then
+        echo -e "${YELLOW}  ⚠️  No PyPI tokens found in environment, skipping .pypirc creation${NC}"
+        return 1
+    fi
+
+    # Ensure we're in the project directory
+    local pypirc_path="$project_dir/.pypirc"
+
+    # Check if .pypirc already exists
+    if [ -f "$pypirc_path" ]; then
+        echo -e "${YELLOW}  ⚠️  .pypirc already exists, backing up to .pypirc.backup${NC}"
+        mv "$pypirc_path" "$project_dir/.pypirc.backup"
+    fi
+
+    # Create .pypirc file in the project directory
+    cat > "$pypirc_path" << EOF
+[distutils]
+index-servers = pypi testpypi
+
+[pypi]
+repository = https://upload.pypi.org/legacy/
+username = __token__
+password = ${pypi_token:-your-pypi-token-here}
+
+[testpypi]
+repository = https://test.pypi.org/legacy/
+username = __token__
+password = ${test_token:-your-test-pypi-token-here}
+EOF
+
+    # Set appropriate permissions (readable only by owner)
+    chmod 600 "$pypirc_path"
+
+    local created_entries=0
+    if [ -n "$pypi_token" ]; then
+        echo -e "${GREEN}  ✅ Added PyPI token to $pypirc_path${NC}"
+        ((created_entries++))
+    else
+        echo -e "${YELLOW}  ⚠️  PyPI token placeholder added (update manually)${NC}"
+    fi
+
+    if [ -n "$test_token" ]; then
+        echo -e "${GREEN}  ✅ Added TestPyPI token to $pypirc_path${NC}"
+        ((created_entries++))
+    else
+        echo -e "${YELLOW}  ⚠️  TestPyPI token placeholder added (update manually)${NC}"
+    fi
+
+    if [ $created_entries -gt 0 ]; then
+        echo -e "${GREEN}.pypirc file created successfully at $pypirc_path!${NC}"
+        echo -e "${BLUE}You can now use: make publish:test or make publish${NC}"
+    else
+        echo -e "${YELLOW}.pypirc template created at $pypirc_path - please update with your actual tokens${NC}"
+    fi
+}
+
 # Function to check if gh CLI is available and authenticated
 check_github_cli() {
     if ! command -v gh &> /dev/null; then
@@ -199,10 +278,10 @@ if [ ! -d "$TEMPLATE_PATH" ]; then
     exit 1
 fi
 
-# Load environment file if creating secrets
-if [ "$CREATE_SECRETS" = true ]; then
+# Load environment file if creating secrets or pypirc
+if [ "$CREATE_SECRETS" = true ] || [ "$CREATE_PYPIRC" = true ]; then
     if ! load_env_file "$ENV_FILE"; then
-        echo -e "${RED}Error: Cannot create secrets without environment file${NC}"
+        echo -e "${RED}Error: Cannot create secrets/pypirc without environment file${NC}"
         exit 1
     fi
 fi
@@ -218,6 +297,11 @@ cookiecutter "$TEMPLATE_PATH" --no-input project_name="$PROJECT_NAME" python_ver
 if [ ! -d "$PROJECT_NAME" ]; then
     echo -e "${RED}Error: Project '$PROJECT_NAME' was not created.${NC}"
     exit 1
+fi
+
+# Create .pypirc file if requested (before changing directory)
+if [ "$CREATE_PYPIRC" = true ]; then
+    create_pypirc_file "$(pwd)/$PROJECT_NAME"
 fi
 
 cd "$PROJECT_NAME" || exit 1
@@ -262,7 +346,24 @@ echo -e "To start working on your project:"
 echo -e "  cd $PROJECT_NAME"
 echo -e "  poetry shell"
 
+# Provide helpful tips based on what was created
 if [ "$CREATE_GITHUB" = true ] && [ "$CREATE_SECRETS" = false ]; then
     echo -e ""
     echo -e "${BLUE}💡 Tip: Add --secrets flag next time to automatically create repository secrets${NC}"
+fi
+
+if [ "$CREATE_PYPIRC" = false ] && ([ "$CREATE_SECRETS" = true ] || [ "$CREATE_GITHUB" = true ]); then
+    echo -e "${BLUE}💡 Tip: Add --pypirc flag to create .pypirc for local publishing${NC}"
+fi
+
+if [ "$CREATE_PYPIRC" = true ] || [ "$CREATE_SECRETS" = true ]; then
+    echo -e ""
+    echo -e "${GREEN}🚀 Your project is ready for publishing!${NC}"
+    if [ "$CREATE_PYPIRC" = true ]; then
+        echo -e "  Local: make publish:test  # Test on TestPyPI"
+        echo -e "         make publish       # Publish to PyPI"
+    fi
+    if [ "$CREATE_SECRETS" = true ]; then
+        echo -e "  Automated: git tag v1.0.0 && git push --tags"
+    fi
 fi
