@@ -104,7 +104,7 @@ jobs:
           SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
           export PYTHONPATH="${SITE_PACKAGES}:${PYTHONPATH:-}"
 
-          # Test import and version (avoiding f-string with cookiecutter variables)
+          # Test import and version
           python -c "import {{ cookiecutter.package_name }}; print('Installed version: ' + {{ cookiecutter.package_name }}.__version__)"
 
       - name: Create GitHub Release
