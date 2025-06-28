@@ -17,12 +17,11 @@ VERSION="0.1.0"
 INSTALL_DEPS=true
 INIT_GIT=true
 CREATE_GITHUB=false
+CREATE_PUBLIC=false
 CREATE_SECRETS=false
 CREATE_PYPIRC=false
 ENV_FILE="$SCRIPT_DIR/.env"
 HELP=false
-
-
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -41,6 +40,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --github)
             CREATE_GITHUB=true
+            shift
+            ;;
+        --public)
+            CREATE_GITHUB=true  # --public implies --github
+            CREATE_PUBLIC=true
             shift
             ;;
         --secrets)
@@ -89,7 +93,7 @@ done
 
 # Show help
 if [ "$HELP" = true ] || [ -z "$PROJECT_NAME" ]; then
-    echo "Usage: poetry-new <project-name> [options]"
+    echo "Usage: new-project <project-name> [options]"
     echo ""
     echo "Options:"
     echo "  --python=VERSION            Python version (default: ^3.10)"
@@ -97,7 +101,8 @@ if [ "$HELP" = true ] || [ -z "$PROJECT_NAME" ]; then
     echo "  --description=DESCRIPTION   Project short description"
     echo "  --no-install                Skip installing dependencies"
     echo "  --no-git                    Skip Git initialization"
-    echo "  --github                    Create GitHub repository (requires gh CLI)"
+    echo "  --github                    Create private GitHub repository (requires gh CLI)"
+    echo "  --public                    Create public GitHub repository (implies --github)"
     echo "  --secrets                   Create GitHub repository secrets from .env"
     echo "  --pypirc                    Create .pypirc file from .env tokens"
     echo "  --env=FILE                  Use specific .env file (default: script-dir/.env)"
@@ -121,6 +126,12 @@ if [ "$HELP" = true ] || [ -z "$PROJECT_NAME" ]; then
     echo "  TEST_PYPI_TOKEN=pypi-..."
     echo "  PYPI_TOKEN=pypi-..."
     echo "  RTD_TOKEN=rtd_..."
+    echo ""
+    echo "Examples:"
+    echo "  $0 my-project                              # Basic project"
+    echo "  $0 my-project --github                     # Private GitHub repo"
+    echo "  $0 my-project --public                     # Public GitHub repo"
+    echo "  $0 my-project --public --secrets --pypirc  # Full setup"
     exit 0
 fi
 
@@ -184,6 +195,7 @@ create_github_secrets() {
             ((created_count++))
         else
             echo -e "${RED}  ❌ Failed to create secret: $secret_name${NC}"
+            ((skipped_count++))
         fi
     done
 
@@ -332,8 +344,17 @@ if [ "$INIT_GIT" = true ]; then
             GITHUB_USERNAME=$(gh api user --jq .login)
             FULL_REPO_NAME="$GITHUB_USERNAME/$PROJECT_NAME"
 
+            # Determine repository visibility
+            if [ "$CREATE_PUBLIC" = true ]; then
+                REPO_VISIBILITY="--public"
+                echo -e "${BLUE}Creating public GitHub repository...${NC}"
+            else
+                REPO_VISIBILITY="--private"
+                echo -e "${BLUE}Creating private GitHub repository...${NC}"
+            fi
+
             # Create the repository
-            gh repo create "$PROJECT_NAME" --private --source=. --remote=origin
+            gh repo create "$PROJECT_NAME" $REPO_VISIBILITY --source=. --remote=origin
             git push -u origin main || git push -u origin master
 
             echo -e "${GREEN}GitHub repository created: https://github.com/$FULL_REPO_NAME${NC}"
@@ -358,11 +379,15 @@ echo -e "  poetry shell"
 # Provide helpful tips based on what was created
 if [ "$CREATE_GITHUB" = true ] && [ "$CREATE_SECRETS" = false ]; then
     echo -e ""
-    echo -e "${BLUE}💡 Tip: Add --secrets flag next time to automatically create repository secrets${NC}"
+    echo -e "${BLUE}💡 Tip: Add --secrets flag to automatically create repository secrets${NC}"
 fi
 
 if [ "$CREATE_PYPIRC" = false ] && ([ "$CREATE_SECRETS" = true ] || [ "$CREATE_GITHUB" = true ]); then
     echo -e "${BLUE}💡 Tip: Add --pypirc flag to create .pypirc for local publishing${NC}"
+fi
+
+if [ "$CREATE_GITHUB" = true ] && [ "$CREATE_PUBLIC" = false ]; then
+    echo -e "${BLUE}💡 Repository created as private. Use --public next time for public repositories${NC}"
 fi
 
 if [ "$CREATE_PYPIRC" = true ] || [ "$CREATE_SECRETS" = true ]; then
