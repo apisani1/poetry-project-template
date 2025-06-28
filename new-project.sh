@@ -9,6 +9,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 TEMPLATE_PATH="$HOME/.cookiecutters/poetry-template"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_NAME=""
 DESCRIPTION="A short description of the project"
 PYTHON_VERSION="^3.10"
@@ -18,8 +19,10 @@ INIT_GIT=true
 CREATE_GITHUB=false
 CREATE_SECRETS=false
 CREATE_PYPIRC=false
-ENV_FILE=".env"
+ENV_FILE="$SCRIPT_DIR/.env"
 HELP=false
+
+
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -97,7 +100,7 @@ if [ "$HELP" = true ] || [ -z "$PROJECT_NAME" ]; then
     echo "  --github                    Create GitHub repository (requires gh CLI)"
     echo "  --secrets                   Create GitHub repository secrets from .env"
     echo "  --pypirc                    Create .pypirc file from .env tokens"
-    echo "  --env=FILE                  Use specific .env file (default: .env)"
+    echo "  --env=FILE                  Use specific .env file (default: script-dir/.env)"
     echo "  --template=PATH             Use a specific template path"
     echo "  -h, --help                  Show this help message"
     echo ""
@@ -114,7 +117,7 @@ if [ "$HELP" = true ] || [ -z "$PROJECT_NAME" ]; then
     echo "  - Uses same tokens from .env file"
     echo "  - Enables 'make publish:test' and 'make publish'"
     echo ""
-    echo "  Required .env file format:"
+    echo "  Required .env file format (in script directory):"
     echo "  TEST_PYPI_TOKEN=pypi-..."
     echo "  PYPI_TOKEN=pypi-..."
     echo "  RTD_TOKEN=rtd_..."
@@ -125,12 +128,15 @@ fi
 load_env_file() {
     local env_file="$1"
 
+    # Convert to absolute path for clearer messaging
+    local abs_env_file="$(realpath "$env_file" 2>/dev/null || echo "$env_file")"
+
     if [ ! -f "$env_file" ]; then
-        echo -e "${YELLOW}Warning: Environment file '$env_file' not found${NC}"
+        echo -e "${YELLOW}Warning: Environment file not found at: $abs_env_file${NC}"
         return 1
     fi
 
-    echo -e "${BLUE}Loading environment variables from $env_file...${NC}"
+    echo -e "${BLUE}Loading environment variables from: $abs_env_file${NC}"
 
     # Export variables from .env file
     while IFS= read -r line || [ -n "$line" ]; do
@@ -221,12 +227,12 @@ index-servers = pypi testpypi
 [pypi]
 repository = https://upload.pypi.org/legacy/
 username = __token__
-password = ${pypi_token:-your-pypi-token-here}
+password = ${pypi_token:-"your-pypi-token-here"}
 
 [testpypi]
 repository = https://test.pypi.org/legacy/
 username = __token__
-password = ${test_token:-your-test-pypi-token-here}
+password = ${test_token:-"your-test-pypi-token-here"}
 EOF
 
     # Set appropriate permissions (readable only by owner)
@@ -280,8 +286,11 @@ fi
 
 # Load environment file if creating secrets or pypirc
 if [ "$CREATE_SECRETS" = true ] || [ "$CREATE_PYPIRC" = true ]; then
+    echo -e "${BLUE}Looking for environment file: $ENV_FILE${NC}"
     if ! load_env_file "$ENV_FILE"; then
         echo -e "${RED}Error: Cannot create secrets/pypirc without environment file${NC}"
+        echo -e "${YELLOW}Expected location: $ENV_FILE${NC}"
+        echo -e "${YELLOW}Use --env=FILE to specify a different location${NC}"
         exit 1
     fi
 fi
