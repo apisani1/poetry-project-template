@@ -59,6 +59,7 @@ def test_readthedocs_config(default_project: Result) -> None:
         # Check required keys
         assert "version" in config
         assert "build" in config
-        assert "sphinx" in config
+        assert "commands" in config["build"]
+        assert "pip install poetry" in config["build"]["commands"]
     except Exception as e:
         pytest.fail(f"Invalid YAML in .readthedocs.yaml: {e}")
