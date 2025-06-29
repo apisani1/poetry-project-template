@@ -19,10 +19,23 @@ release = "{{ cookiecutter.version }}"
 os.environ["SPHINX_BUILD"] = "True"
 
 # Add package to path for autodoc
-package_path = os.path.abspath("../src")
-if os.path.exists(os.path.join(package_path, "{{ cookiecutter.package_name }}")):
-    package_path = os.path.join(package_path, "{{ cookiecutter.package_name }}")
-sys.path.insert(0, package_path)
+import os
+import sys
+from pathlib import Path
+
+# Get the project root directory (parent of docs directory)
+docs_dir = Path(__file__).parent
+project_root = docs_dir.parent
+src_dir = project_root / "src"
+
+# Add src to path if it exists
+if src_dir.exists():
+    sys.path.insert(0, str(src_dir))
+
+# Also add the specific package directory if it exists
+package_dir = src_dir / "{{ cookiecutter.package_name }}"
+if package_dir.exists():
+    sys.path.insert(0, str(package_dir))
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

@@ -20,7 +20,7 @@ packages = [{ include = "{{ cookiecutter.package_name }}", from = "src" }]
 version_variable = [
     "pyproject.toml:version",
     "docs/conf.py:release",
-    "src/__init__.py:__version__",
+    "src/{{ cookiecutter.package_name }}/__init__.py:__version__",
 ]
 
 [tool.poetry.dependencies]
