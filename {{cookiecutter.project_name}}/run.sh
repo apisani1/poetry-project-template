@@ -483,11 +483,11 @@ function validate:build {
 
 # Helper function to get multi-line changes input
 function get:changes {
-    echo "Enter changes (empty line to finish):"
+    echo "Enter changes (empty line to finish):" >&2
     local changes=""
     while IFS= read -r line; do
         [[ -z "$line" ]] && break
-        changes="${changes}${line}"$'\n'
+        changes="${changes}- ${line}"$'\n'
     done
     echo "$changes"
 }

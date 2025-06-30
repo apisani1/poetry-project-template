@@ -211,56 +211,58 @@ def bump_version(  # pylint: disable=too-many-branches
     Raises:
         ValueError: If the bump is not valid or the arguments are incorrect.
     """
+
+    def bump_from_pre_to_pre() -> str:
+        current_pre_type, current_pre_num = current_version.pre  # type: ignore
+        if prerelease_type is None or prerelease_type == PrereleaseType(current_pre_type):
+            return f"{major}.{minor}.{micro}{current_pre_type}{current_pre_num + 1}"
+        pre_hierarchy = {"a": 1, "b": 2, "rc": 3}
+        if pre_hierarchy.get(prerelease_type.value, 0) > pre_hierarchy.get(current_pre_type, 0):
+            return f"{major}.{minor}.{micro}{prerelease_type.value}1"
+        raise ValueError(f"Cannot bump to prerelease '{prerelease_type.value}' from prerelease '{current_pre_type}'. ")
+
     try:
         major = current_version.release[0] if len(current_version.release) > 0 else 0
         minor = current_version.release[1] if len(current_version.release) > 1 else 0
         micro = current_version.release[2] if len(current_version.release) > 2 else 0
+        current_pre__segment = (
+            f"{current_version.pre[0]}{current_version.pre[1]}" if current_version.pre is not None else ""
+        )
 
-        # Used when specifying a release segment for a pre-release
-        # For example, python release.py create major --pre rc
-        prerelease_segment = f"{prerelease_type.value}1" if prerelease_type else ""
-
-        if release_type in StableRelease and current_version.pre is not None:
-            # To release a stable version from a pre-release just drop the pre-release segment
-            # and ignore the release type requested
-            new_version = f"{major}.{minor}.{micro}"
-        elif release_type == ReleaseType.MAJOR:
-            new_version = f"{major + 1}.0.0{prerelease_segment}"
-        elif release_type == ReleaseType.MINOR:
-            new_version = f"{major}.{minor + 1}.0{prerelease_segment}"
-        elif release_type == ReleaseType.MICRO:
-            new_version = f"{major}.{minor}.{micro + 1}{prerelease_segment}"
+        if release_type == ReleaseType.DEV:
+            if prerelease_type is not None:
+                raise ValueError("Cannot bump to dev release with a prerelease type specified.")
+            new_dev_number = current_version.dev + 1 if current_version.dev is not None else 1
+            new_version = f"{major}.{minor}.{micro}{current_pre__segment}-dev{new_dev_number}"
+        elif release_type == ReleaseType.POST:
+            if prerelease_type is not None:
+                raise ValueError("Cannot bump to post release with a prerelease type specified.")
+            new_post_number = current_version.post + 1 if current_version.post is not None else 1
+            new_version = f"{major}.{minor}.{micro}{current_pre__segment}-post{new_post_number}"
         elif release_type == ReleaseType.PRE:
             if current_version.pre is None:
                 pre_type = PrereleaseType.RC if prerelease_type is None else prerelease_type
                 new_version = f"{major}.{minor}.{micro + 1}{pre_type.value}1"
             else:
-                current_pre_type, current_pre_num = current_version.pre
-                if prerelease_type is None or prerelease_type == PrereleaseType(current_pre_type):
-                    new_version = f"{major}.{minor}.{micro}{current_pre_type}{current_pre_num + 1}"
-                else:
-                    pre_hierarchy = {"a": 1, "b": 2, "rc": 3}
-                    if pre_hierarchy.get(prerelease_type.value, 0) > pre_hierarchy.get(current_pre_type, 0):
-                        new_version = f"{major}.{minor}.{micro}{prerelease_type.value}1"
-                    else:
-                        raise ValueError(
-                            f"Cannot bump to prerelease '{prerelease_type.value}' \
-                                from prerelease '{current_pre_type}'. "
-                        )
-        elif release_type == ReleaseType.DEV:
-            current_pre__segment = (
-                f"{current_version.pre[0]}{current_version.pre[1]}" if current_version.pre is not None else ""
-            )
-            new_dev_number = current_version.dev + 1 if current_version.dev is not None else 1
-            new_version = f"{major}.{minor}.{micro}{current_pre__segment}-dev{new_dev_number}"
-        elif release_type == ReleaseType.POST:
-            current_pre__segment = (
-                f"{current_version.pre[0]}{current_version.pre[1]}" if current_version.pre is not None else ""
-            )
-            new_post_number = current_version.post + 1 if current_version.post is not None else 1
-            new_version = f"{major}.{minor}.{micro}{current_pre__segment}-post{new_post_number}"
+                new_version = bump_from_pre_to_pre()
         else:
-            raise ValueError(f"Release type '{release_type}' not recognized.")
+            if current_version.pre is not None:
+                if prerelease_type is None:
+                    # To release a stable version from a pre-release just drop the pre-release segment
+                    # and ignore the release type requested
+                    new_version = f"{major}.{minor}.{micro}"
+                else:
+                    new_version = bump_from_pre_to_pre()
+            else:
+                prerelease_segment = f"{prerelease_type.value}1" if prerelease_type else ""
+                if release_type == ReleaseType.MAJOR:
+                    new_version = f"{major + 1}.0.0{prerelease_segment}"
+                elif release_type == ReleaseType.MINOR:
+                    new_version = f"{major}.{minor + 1}.0{prerelease_segment}"
+                elif release_type == ReleaseType.MICRO:
+                    new_version = f"{major}.{minor}.{micro + 1}{prerelease_segment}"
+                else:
+                    raise ValueError(f"Release type '{release_type}' not supported.")
 
         logging.info(f"Bumping from version {current_version} to {new_version}")
         return Version(new_version)

@@ -73,7 +73,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
 }
 
-intersphinx_disabled_domains = []
+intersphinx_disabled_domains = []  # type: ignore
 intersphinx_timeout = 30
 intersphinx_cache_limit = 90  # days
 intersphinx_disabled_reftypes = ["*"]
@@ -144,7 +144,7 @@ suppress_warnings = [
 ]
 
 # Add custom CSS
-def setup(app):
+def setup(app):  # type: ignore
     app.add_css_file("custom.css")
 
 from unittest.mock import MagicMock
@@ -155,7 +155,7 @@ autoclass_content = "both"  # Include both class and __init__ docstrings
 autodoc_member_order = "bysource"  # Keep same order as in the source code
 
 # Simple mocking for straightforward imports
-autodoc_mock_imports = [
+autodoc_mock_imports = [  # type: ignore
     {% if cookiecutter.autodoc_mock_imports %}{% for module in cookiecutter.autodoc_mock_imports.split(',') %}"{{ module.strip() }}",
     {% endfor %}{% else %}{% endif %}
 ]
@@ -163,11 +163,11 @@ autodoc_mock_imports = [
 # For more complex mocking where simple mocking isn't sufficient
 class Mock(MagicMock):
     @classmethod
-    def __getattr__(cls, name):
+    def __getattr__(cls, name): # type: ignore
         return MagicMock()
 
 # Complex modules that need special handling
-MOCK_MODULES = [
+MOCK_MODULES = [  # type: ignore
     {% if cookiecutter.complex_mock_modules %}{% for module in cookiecutter.complex_mock_modules.split(',') %}"{{ module.strip() }}",
     {% endfor %}{% endif %}
 ]
