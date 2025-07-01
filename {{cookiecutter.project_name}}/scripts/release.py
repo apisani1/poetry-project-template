@@ -115,7 +115,7 @@ def create_release(
         new_version = bump_version(current_version, release_type, prerelease_type)
         update_version_files(project_file, new_version)
         changelog_entry = update_changelog(changelog_file, date, new_version, changes_message)
-        commit_message = create_commit(new_version, changelog_entry, release_type, prerelease_type)  # type: ignore
+        commit_message = create_commit(new_version, changelog_entry)  # type: ignore
         create_tag(date, new_version, commit_message)
         save_state(time_stamp, current_version)
 
@@ -425,8 +425,6 @@ def analyze_version_for_commit(version: Version) -> tuple[str, str, str]:
 def create_commit(
     new_version: Version,
     changes: str,
-    release_type: ReleaseType,
-    prerelease_type: Optional[PrereleaseType] = None,
 ) -> str:
     """Create a commit with the changes."""
     # Determine commit message components from the version itself
