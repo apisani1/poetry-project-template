@@ -135,7 +135,7 @@ def get_latest_release_tag() -> Optional[str]:
     """Find the latest release tag matching 'v<PyPI version>'."""
     tags = subprocess.check_output(["git", "tag"], text=True).splitlines()
     # Filter only version tags
-    valid_tags = [tag for tag in tags if re.match(r"^v\d+\.\d+\.\d+([-.](?:a|b|rc|dev|post)\d*)?$", tag)]
+    valid_tags = [tag for tag in tags if re.match(rr"^v\d+\.\d+\.\d+(?:[-.]?(?:a|alpha|b|beta|rc|dev|post)\d*)?$", tag)]
     if not valid_tags:
         return None
     # Sort tags by version number (PEP 440 compliant sorting)
@@ -191,6 +191,11 @@ def read_from_toml_file(file_path: str, section: str, key: str) -> Optional[str]
         logger.error(f"Error reading '{key}' field of section 'tool.{section}' from {file_path}: {e}")
         raise
 
+def get_stable_components(version: Version) -> tuple[int, int, int]:
+    major = version.release[0] if len(version.release) > 0 else 0
+    minor = version.release[1] if len(version.release) > 1 else 0
+    micro = version.release[2] if len(version.release) > 2 else 0
+    return major, minor, micro
 
 def bump_version(  # pylint: disable=too-many-branches
     current_version: Version,
@@ -222,9 +227,7 @@ def bump_version(  # pylint: disable=too-many-branches
         raise ValueError(f"Cannot bump to prerelease '{prerelease_type.value}' from prerelease '{current_pre_type}'. ")
 
     try:
-        major = current_version.release[0] if len(current_version.release) > 0 else 0
-        minor = current_version.release[1] if len(current_version.release) > 1 else 0
-        micro = current_version.release[2] if len(current_version.release) > 2 else 0
+        major, minor, micro = get_stable_components(current_version)
         current_pre__segment = (
             f"{current_version.pre[0]}{current_version.pre[1]}" if current_version.pre is not None else ""
         )
@@ -364,29 +367,56 @@ def open_in_editor(context: str, text: str, extension: str) -> str:
     return edited_text
 
 
-change_type = {
-    ReleaseType.MAJOR: "feat",
-    ReleaseType.MINOR: "feat",
-    ReleaseType.MICRO: "fix",
-    ReleaseType.PRE: "feat",
-    ReleaseType.DEV: "feat",
-    ReleaseType.POST: "chore",
+version_suffix = {
+    'a': "alpha",
+    'b': "beta",
+    "rc": "rc",
 }
 
-scope = {
-    ReleaseType.MAJOR: "breaking",
-    ReleaseType.MINOR: "minor",
-    ReleaseType.MICRO: "patch",
-    ReleaseType.PRE: "prerelease",
-    ReleaseType.DEV: "minor",
-    ReleaseType.POST: "fix",
-}
+def analyze_version_for_commit(version: Version) -> tuple[str, str, str]:
+    """
+    Analyze version to determine commit message header components from the version structure.
 
-pre_release_prefix = {
-    PrereleaseType.ALPHA: "alpha",
-    PrereleaseType.BETA: "beta",
-    PrereleaseType.RC: "rc",
-}
+    Returns:
+        tuple: (change_type, scope, suffix)
+    """
+    # Determine version suffix
+    suffix= ""
+    if version.pre:
+        suffix = version_suffix.get(version.pre[0], "")
+    if version.post:
+        suffix = "post{version.post}{suffix}"
+    if version.dev:
+        suffix = "dev{version.dev}{suffix}"
+
+    # Get stable version components
+    major, minor, micro = get_stable_components(version)
+
+    # Determine change_type and scope based on version structure
+    if version.post is not None:
+        # Post-release: always a patch-level chore
+        change_type = "chore"
+        scope = "patch"
+    elif version.pre or version.dev:
+        # Pre-release or dev release
+        scope = "prerelease"
+        if micro == 0 and (minor > 0 or major > 0):
+            change_type = "feat"
+        else:
+            change_type = "fix"
+    else:
+        # Stable release
+        if micro == 0 and minor == 0 and major > 0:
+            change_type = "feat"
+            scope = "breaking"
+        elif micro == 0 and minor > 0:
+            change_type = "feat"
+            scope = "minor"
+        else:
+            change_type = "fix"
+            scope = "patch"
+
+    return change_type, scope, suffix
 
 
 def create_commit(
@@ -396,10 +426,10 @@ def create_commit(
     prerelease_type: Optional[PrereleaseType] = None,
 ) -> str:
     """Create a commit with the changes."""
-    commit_msg = [
-        f"release {new_version}: {change_type[release_type]}({scope[release_type]}) \
-            {pre_release_prefix[prerelease_type] if prerelease_type else ''} "
-    ]
+    # Determine commit message components from the version itself
+    change_type, scope, suffix = analyze_version_for_commit(new_version)
+
+    commit_msg = [f"release {new_version}: {change_type}({scope}) {suffix}"]
     commit_msg.append("")
     commit_msg.append("Changes")
     commit_msg.append("-" * 80)
