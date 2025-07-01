@@ -396,8 +396,10 @@ def create_commit(
     prerelease_type: Optional[PrereleaseType] = None,
 ) -> str:
     """Create a commit with the changes."""
-    commit_msg = [f"release {new_version}: {change_type[release_type]}({scope[release_type]}) "]
-    commit_msg.append(f"{pre_release_prefix[prerelease_type] if prerelease_type else ''}")
+    commit_msg = [
+        f"release {new_version}: {change_type[release_type]}({scope[release_type]}) \
+            {pre_release_prefix[prerelease_type] if prerelease_type else ''} "
+    ]
     commit_msg.append("")
     commit_msg.append("Changes")
     commit_msg.append("-" * 80)
