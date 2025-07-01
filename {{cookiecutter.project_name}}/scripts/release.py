@@ -135,7 +135,7 @@ def get_latest_release_tag() -> Optional[str]:
     """Find the latest release tag matching 'v<PyPI version>'."""
     tags = subprocess.check_output(["git", "tag"], text=True).splitlines()
     # Filter only version tags
-    valid_tags = [tag for tag in tags if re.match(rr"^v\d+\.\d+\.\d+(?:[-.]?(?:a|alpha|b|beta|rc|dev|post)\d*)?$", tag)]
+    valid_tags = [tag for tag in tags if re.match(r"^v\d+\.\d+\.\d+(?:[-.]?(?:a|alpha|b|beta|rc|dev|post)\d*)?$", tag)]
     if not valid_tags:
         return None
     # Sort tags by version number (PEP 440 compliant sorting)
@@ -191,11 +191,13 @@ def read_from_toml_file(file_path: str, section: str, key: str) -> Optional[str]
         logger.error(f"Error reading '{key}' field of section 'tool.{section}' from {file_path}: {e}")
         raise
 
+
 def get_stable_components(version: Version) -> tuple[int, int, int]:
     major = version.release[0] if len(version.release) > 0 else 0
     minor = version.release[1] if len(version.release) > 1 else 0
     micro = version.release[2] if len(version.release) > 2 else 0
     return major, minor, micro
+
 
 def bump_version(  # pylint: disable=too-many-branches
     current_version: Version,
@@ -368,10 +370,11 @@ def open_in_editor(context: str, text: str, extension: str) -> str:
 
 
 version_suffix = {
-    'a': "alpha",
-    'b': "beta",
+    "a": "alpha",
+    "b": "beta",
     "rc": "rc",
 }
+
 
 def analyze_version_for_commit(version: Version) -> tuple[str, str, str]:
     """
@@ -381,7 +384,7 @@ def analyze_version_for_commit(version: Version) -> tuple[str, str, str]:
         tuple: (change_type, scope, suffix)
     """
     # Determine version suffix
-    suffix= ""
+    suffix = ""
     if version.pre:
         suffix = version_suffix.get(version.pre[0], "")
     if version.post:
