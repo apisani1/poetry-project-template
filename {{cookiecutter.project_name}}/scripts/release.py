@@ -388,9 +388,9 @@ def analyze_version_for_commit(version: Version) -> tuple[str, str, str]:
     if version.pre:
         suffix = version_suffix.get(version.pre[0], "")
     if version.post:
-        suffix = "post{version.post}{suffix}"
+        suffix = f"post{version.post}{suffix}"
     if version.dev:
-        suffix = "dev{version.dev}{suffix}"
+        suffix = f"dev{version.dev}{suffix}"
 
     # Get stable version components
     major, minor, micro = get_stable_components(version)
